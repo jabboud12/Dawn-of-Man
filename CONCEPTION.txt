@@ -1,0 +1,116 @@
+************************ AreaGame ************************
+
+==>Area
+-Added a variable cameraScaleFactor so we could zoom in or out + 2 methods changeCameraScaleFactor & setCameraScaleFactor
+-(method) actorsInitialised: tells us if an area has already been suspended
+
+==>AreaEntity
+-Protected float timing to manage interactions (e.g. for a pressure switch not to be used for a certain amount of time
+-The constructor will initialize timing to zero
+-Added getSignal, but is never used until the lower classes of the hierarchy (e.g. Collectable, Switchable...)
+
+************************* Enigme *************************
+==>EnigmeBehavior
+-We added a new Cell type; Conditionnable which is represented by a yellow pixel of RGB code(-256). This cell type
+is traversable
+
+==>Enigme
+-We created an area for levelSelector, the 5 levels and pause.
+-When we go to the pause menu, in order to save the previous owner area and coordinates of the main player, we created
+another Area object and DiscreteCoordinates.
+-In the attributes, the main player, is an EnigmePlayer but you have the freedom to initialize it in 4 different ways
+   •new EnigmePlayer without a title, gives you the default "ghost.1" sprite
+   •new EnigmePlayer with a title
+   •new EnigmeAnimatedPlayer without a title, gives you the default "max.new.1" sprites
+   •new EnigmeAnimatedPlayer with a title
+-(method) update(): we introduced a condition that when the main player is passing a door, the whole procedure of
+changing from one area to another is called
+-(method) update(): we call updateEntities of each level depending on currentArea()
+-Buttons Z and X are used to respectively zoom in and out expect when the current area is level4 or level5
+-We put a (method) private void changeArea in order to switch indefinitely between the pause menu and other areas,
+ whilst saving the previous area and coordinates of the main player
+
+********************** Enigme.actor **********************
+==>EnigmePlayer
+-We added a String 'title' in the attributes to be able able to choose what sprite to use as the main character
+in the game
+-The constructor without a title will give you the 'default' player "ghost.1"
+
+==>EnigmeAnimatedPlayer
+-In order to animate the characters, we used the constructor of this class to initialize the 4 different arrays
+associated with each orientation.
+-The variable step helps us iterate over the sprites of each array in a timely manner
+
+To generalize our program, we decided not to create different classes for different entities(e.g. Apple, Key, Torch...)
+and group them as much as we could.
+
+==>Door
+-We tried to generalize this class by creating a general constructor  that gives us the ability to create doors with
+different sprites than the default ones
+-We introduced the variable timesUsed in order to use it as a condition for other entities to be switched on
+
+==>Collectable
+-To regroup all entities that are view interactable and leave the area when interacted with, we created this class.
+-In order to choose which sprite to use, we inserted in the constructor a String which determines the sprite to be used
+
+==>Switchable
+-The constructor takes three Strings(which can all be null)
+    •titleOn1 and titleOn2 specify the sprites which are drawn when the entity is switched on (we used two sprites
+    to create a live visual effect (e.g. flame of the torch), but if this effect is not desired titleOn2 should be null)
+    •titleOff specifies the sprite which is drawn when entity is turned off
+-At the end of the constructor, a boolean is used to decide whether the entity is traversable or not
+-the timing describe in AreaEntity is used here to set a time limit in order not the spam the interaction with
+other interactables
+-(method) draw: if spriteOn2 is null, draw is used as usual, otherwise, we set specific intervals to alternate between
+both sprites periodically
+
+==>Dialog
+-We only added a display time in the constructor in order to contol for how long each dialog will be shown
+
+In the package game.play.game.enigme.actor, all classes starting with Signal have the same behavior but extend
+different classes.
+They all have 3 main constructors
+-All the constructors are indentical to their respective super classes but for the last parameter which could be:
+    •(List<AreaEntity>) all the area entities in this list will affect the signal of the object
+    •(AreaEntity) this unique area entity will determine the object's signal
+    •(Logic) usually used to finalize the object's signal
+If the signal depends on a complex compound proposition, we will set the object's signal in the method updateEntities()
+of its owner area
+
+==>Portal
+-It is basically a signal door with a different sprite
+
+==>PressurePlate
+-It is a Switchable to which we introduced an activation time limit so when it is switched on, it stays that way until
+the current time exceeds the activation time
+
+==>Dice
+-We created an array of Sprite that stores all of the 6 sprites for the dice and used a variable (int) n (between 0 & 5)
+that is generated randomly each time the space button is down(instead of is pressed to create a visual effect of a rolling
+dice)
+-Thus in the (method) draw each time the space bar is down, n is generated randomly, and the corresponding sprite is
+chosen as the current sprite
+-(method) getN() is used to be able to compare the values of different dice
+
+==>AnimatedCoin
+-It is basically a collectable that, instead of being represented by 1 sprite, is represent by an array of 4 sprites
+giving the impression of motion
+-Contrarly to the collectable, it is collected when stepped on, not by using the l key.
+-Furthermore, each time a coin is collected, another one is randomly generated on another cell
+
+
+********************** Enigme.area ***********************
+==>Level1:
+-Was supposed to be an empty room. But, we put a traversable ghost that, when interacted with shows a dialog
+
+In the other areas, we added different dialogs to make the game more interactive
+
+In all areas, except level selector and level1, we added a void (method) updateEntities() different from
+update(float deltaTime) which actualizes the signals of the compound propositions put in there
+These methods are implemented in the (method) update() of the class Enigme
+
+==>Pause
+-We created a new class Pause which represents an empty room where we inserted randomly generated animatedCoin and
+a reference to a movie. It is a snake inspired mini-game
+
+
